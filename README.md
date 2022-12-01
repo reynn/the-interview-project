@@ -21,12 +21,14 @@ Currently, the project consists of a Go microservice and a corresponding client 
 
 ### Potential next steps
 
-| Feature        | Description                            |
-| -------------- | -------------------------------------- |
-| Authentication | Authenticate API requests.             |
-| Client SDK     | Manage client-side authentication.     |
-| Configuration  | Inject config values from environment. |
-| Logging        | gRPC middleware, log levels.           |
+| Feature                | Description                            |
+| ---------------------- | -------------------------------------- |
+| Authentication         | Authenticate API requests.             |
+| Client SDK             | Manage client-side authentication.     |
+| Configuration          | Inject config values from environment. |
+| Logging                | gRPC middleware, log levels.           |
+| Testing                | Unit tests, integration tests.         |
+| Continuous integration | GitHub Actions for tests.              |
 
 ## Contribute
 
