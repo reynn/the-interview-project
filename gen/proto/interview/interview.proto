@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "./interview";
+
+service InterviewService {
+	rpc HelloWorld(HelloWorldRequest) returns (HelloWorldResponse) {}
+}
+
+message HelloWorldRequest {
+	string Name = 1;
+}
+
+message HelloWorldResponse {
+	string Greeting = 2;
+}
+
