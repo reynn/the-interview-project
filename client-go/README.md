@@ -5,5 +5,5 @@ Consume the Interview API.
 ## Run
 
 ```sh
-go run main.go
+go run cmd/client/main.go
 ```
