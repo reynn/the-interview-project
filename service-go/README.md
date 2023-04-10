@@ -7,3 +7,9 @@ Serve the Interview API.
 ```sh
 go run main.go
 ```
+
+## Test
+
+```sh
+go test ./...
+```
