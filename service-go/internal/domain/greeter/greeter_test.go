@@ -1,61 +1,85 @@
 package greeter
 
 import (
-    "fmt"
-    "testing"
+	"fmt"
+	"testing"
 )
 
 func TestGreeter(t *testing.T) {
-    type TestResults struct {
-        name string
-    }
-    type TestParameters struct {
-        greeterName string
-        // parameters
-        beginFn func(t *testing.T)
-        expectFn func(t *testing.T, results TestResults)
-    }
-    type TestScenario struct {
-        name string
-        setupFn func(t *testing.T) TestParameters
-    }
-    testScenarios := []TestScenario{
-        {
-            setupFn: func(t *testing.T) TestParameters {
-                greeterName := "foo"
-                return TestParameters{
-                    greeterName: greeterName,
-                    beginFn: func(t *testing.T) {},
-                    expectFn: func(t *testing.T, results TestResults) {
-                        expectedGreeting := fmt.Sprintf(greetingFormatter, greeterName)
-                        if results.name != expectedGreeting {
-                            t.Errorf(
-                                "Unexpected greeting: \"%s\" != \"%s\"",
-                                results.name,
-                                expectedGreeting,
-                            )
-                        }
-                    },
-                }
-            },
-        },
-    }
-    for _, scenario := range testScenarios {
-        parameters := scenario.setupFn(t)
-        t.Run(
-            scenario.name,
-            func(t *testing.T) {
-                parameters.beginFn(t)
-                
-                result := Greet(parameters.greeterName)
+	type TestResults struct {
+		greeting string
+	}
 
-                parameters.expectFn(
-                    t,
-                    TestResults{
-                        name: result,
-                    },
-                )
-            },
-        )
-    }
+	type TestParameters struct {
+		greeterName string
+		beginFn     func(t *testing.T)
+		expectFn    func(t *testing.T, results TestResults)
+	}
+
+	type TestScenario struct {
+		description string
+		setupFn     func(t *testing.T) TestParameters
+	}
+
+	testScenarios := []TestScenario{
+		{
+			description: "formats greeting with given name",
+			setupFn: func(t *testing.T) TestParameters {
+				greeterName := "foo"
+				return TestParameters{
+					greeterName: greeterName,
+					beginFn:     func(t *testing.T) {},
+					expectFn: func(t *testing.T, results TestResults) {
+						expectedGreeting := fmt.Sprintf(greetingFormatter, greeterName)
+						if results.greeting != expectedGreeting {
+							t.Errorf(
+								"Unexpected greeting: \"%s\" != \"%s\"",
+								results.greeting,
+								expectedGreeting,
+							)
+						}
+					},
+				}
+			},
+		},
+		{
+			description: "formats greeting with \"stranger\" when no name is given",
+			setupFn: func(t *testing.T) TestParameters {
+				greeterName := ""
+				return TestParameters{
+					greeterName: greeterName,
+					beginFn:     func(t *testing.T) {},
+					expectFn: func(t *testing.T, results TestResults) {
+						expectedGreeting := fmt.Sprintf(greetingFormatter, "stranger")
+						if results.greeting != expectedGreeting {
+							t.Errorf(
+								"Unexpected greeting: \"%s\" != \"%s\"",
+								results.greeting,
+								expectedGreeting,
+							)
+						}
+					},
+				}
+			},
+		},
+	}
+
+	for _, scenario := range testScenarios {
+		parameters := scenario.setupFn(t)
+		t.Run(
+			scenario.description,
+			func(t *testing.T) {
+				parameters.beginFn(t)
+
+				result := Greet(parameters.greeterName)
+
+				parameters.expectFn(
+					t,
+					TestResults{
+						greeting: result,
+					},
+				)
+			},
+		)
+	}
 }

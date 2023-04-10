@@ -1,11 +1,11 @@
 package greeter
 
 import (
-    "fmt"
+	"fmt"
 )
 
 const (
-    greetingFormatter = "Hello, %s"
+	greetingFormatter = "Hello, %s"
 )
 
 func Greet(name string) string {
@@ -13,6 +13,7 @@ func Greet(name string) string {
 		name = "stranger"
 	}
 
-    greeting := fmt.Sprintf(greetingFormatter, name)
+	greeting := fmt.Sprintf(greetingFormatter, name)
+
 	return greeting
 }
