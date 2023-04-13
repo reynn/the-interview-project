@@ -1,4 +1,4 @@
-package service
+package main
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func Start() {
+func main() {
 	address := fmt.Sprintf("localhost:%d", 8080)
 	log.Printf("Starting interview service at %s", address)
 
