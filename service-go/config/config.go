@@ -1,28 +1,33 @@
 package config
 
 import (
-	"encoding/json"
-	"log"
-	"os"
+	"fmt"
+
+	"github.com/caarlos0/env/v11"
 )
 
 type (
-	GrpcConfig struct {
-		ServerHost   string `json:"server_host" default:"localhost"`
-		UnsecurePort string `json:"unsecure_port" default:"8080"`
+	Application struct {
+		JWTSecret string `env:"JWT_SECRET"`
+		GRPC GRPC
+	}
+
+	GRPC struct {
+		ServerHost   string `env:"server_host" envDefault:"localhost"`
+		UnsecurePort string `env:"unsecure_port" envDefault:"8080"`
 	}
 )
 
-func LoadConfigFromFile(path string) *GrpcConfig {
-	var cfg GrpcConfig
-	val, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalln("error reading file", err)
+func Load() (*Application, error) {
+	cfg := Application{}
+
+	// keeping this outside of the return in the case we want to do additional checks
+	// after parsing before we return
+	err := env.Parse(&cfg)
+
+	if cfg.JWTSecret == "" {
+		return nil, fmt.Errorf("error loading JWT secret from envoirnment")
 	}
 
-	if unMarErr := json.Unmarshal(val, &cfg); unMarErr != nil {
-		log.Fatalln("error during unmarshal", err)
-	}
-
-	return &cfg
+	return &cfg, err
 }

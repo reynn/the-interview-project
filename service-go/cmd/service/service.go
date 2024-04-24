@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"log"
 	"net"
@@ -21,25 +20,21 @@ import (
 )
 
 func main() {
+	appCfg, loadErr := config.Load()
+	if loadErr != nil {
+		log.Fatalf("failed to load the app config: %v", loadErr)
+	}
 
-	grpcConfig := config.LoadConfigFromFile(configPath)
-
-	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+	address := fmt.Sprintf("%s:%s", appCfg.GRPC.ServerHost, appCfg.GRPC.UnsecurePort)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
-
-	if jwtSecret == "" {
-		log.Fatalf("error loading secret from envoirnment")
-	}
-
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
+			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(appCfg.JWTSecret))),
 		),
 	}
 
@@ -55,7 +50,6 @@ func main() {
 
 const (
 	authHeader = "authorization"
-	configPath = "./config/grpc.json"
 )
 
 // validateJWT parses and validates a bearer jwt
