@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 SERVICE_RELATIVE_PATH="../../service-go/internal/api"
 
