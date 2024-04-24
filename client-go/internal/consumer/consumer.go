@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"interview-client/internal/api/interview"
-	"log"
+	"log/slog"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -24,7 +23,7 @@ func New(c *grpc.ClientConn) *consumer {
 func (s *consumer) HelloWorld(ctx context.Context) {
 	resp, err := s.client.HelloWorld(context.Background(), &interview.HelloWorldRequest{})
 	if err != nil {
-		log.Fatalln(errors.Wrap(err, "failed to hello world"))
+		slog.Error("failed to hello world", slog.Any("error", err))
 	}
 	fmt.Println(resp)
 }

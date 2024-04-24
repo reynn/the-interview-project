@@ -8,8 +8,9 @@ import (
 
 type (
 	Application struct {
+		Debug     bool   `env:"DEBUG"`
 		JWTSecret string `env:"JWT_SECRET"`
-		GRPC GRPC
+		GRPC      GRPC
 	}
 
 	GRPC struct {
@@ -26,7 +27,7 @@ func Load() (*Application, error) {
 	err := env.Parse(&cfg)
 
 	if cfg.JWTSecret == "" {
-		return nil, fmt.Errorf("error loading JWT secret from envoirnment")
+		return nil, fmt.Errorf("error loading JWT secret from environment")
 	}
 
 	return &cfg, err

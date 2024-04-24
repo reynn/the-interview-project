@@ -2,8 +2,9 @@ package jwtValidator
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // JWTClaims represents the custom claims for our JWT

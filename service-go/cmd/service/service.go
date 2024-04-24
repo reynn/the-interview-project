@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"log"
+	"log/slog"
 	"net"
+	"os"
 
 	config "interview-service/config"
 	"interview-service/internal/api"
@@ -22,14 +22,24 @@ import (
 func main() {
 	appCfg, loadErr := config.Load()
 	if loadErr != nil {
-		log.Fatalf("failed to load the app config: %v", loadErr)
+		slog.Error("failed to load the app config", slog.Any("error", loadErr))
+		os.Exit(1)
 	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: func()slog.Leveler{
+			if appCfg.Debug {
+				return slog.LevelDebug
+			}
+			return slog.LevelInfo
+		}(),
+	})))
 
 	address := fmt.Sprintf("%s:%s", appCfg.GRPC.ServerHost, appCfg.GRPC.UnsecurePort)
 
-	lis, err := net.Listen("tcp", address)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	lis, listenErr := net.Listen("tcp", address)
+	if listenErr != nil {
+		slog.Error("failed to listen", slog.Any("error", listenErr), slog.String("address", address))
+		os.Exit(1)
 	}
 
 	opts := []grpc.ServerOption{
@@ -43,9 +53,8 @@ func main() {
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
 
-	log.Printf("Starting interview service at %s", address)
+	slog.Info("Starting interview service", slog.String("address", address))
 	grpcServer.Serve(lis)
-
 }
 
 const (
@@ -64,7 +73,7 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-			log.Default().Println(err)
+			slog.Error("error validating jwt token", slog.Any("error", err))
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 

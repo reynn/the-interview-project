@@ -25,5 +25,6 @@ jobs:
       - name: Test
         run: make test
 
+      # We want to make sure the normal binaries are able to be built to check any errors
       - name: Build
         run: make build
