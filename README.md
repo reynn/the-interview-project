@@ -15,6 +15,9 @@ sequenceDiagram
     authservice-->>client: token or error
     client->>interviewservice: send request with retrieved token
     activate interviewservice
+    interviewservice->>authservice: validate client provided jwt
+    activate authservice
+    authservice-->>interviewservice: response or error
     interviewservice-->>client: greeting or error
 ```
 
