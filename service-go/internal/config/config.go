@@ -11,7 +11,7 @@ type (
 	}
 
 	GRPC struct {
-		ServerAddr     string `env:"SERVER_ADDR" envDefault:"localhost:8080"`
+		ServerAddr     string `env:"SERVER_ADDR" envDefault:":8080"`
 		AuthServerAddr string `env:"AUTH_SERVER_ADDR" envDefault:"localhost:8081"`
 	}
 )

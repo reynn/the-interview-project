@@ -13,7 +13,7 @@ type (
 		GRPC      GRPC
 	}
 	GRPC struct {
-		ListenAddr string `env:"LISTEN_ADDR" envDefault:"0.0.0.0:8081"`
+		ListenAddr string `env:"LISTEN_ADDR" envDefault:":8081"`
 	}
 )
 
