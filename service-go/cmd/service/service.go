@@ -2,31 +2,34 @@ package main
 
 import (
 	"context"
-	"fmt"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"google.golang.org/grpc/credentials/insecure"
+	"interview-service/internal/config"
+	"interview-service/internal/domain/jwt"
 	"log/slog"
 	"net"
 	"os"
+	"os/signal"
 
-	config "interview-service/config"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
-
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func main() {
-	appCfg, loadErr := config.Load()
+	appCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer cancel()
+
+	appCfg, loadErr := config.LoadFromEnv()
 	if loadErr != nil {
 		slog.Error("failed to load the app config", slog.Any("error", loadErr))
 		os.Exit(1)
 	}
+	// set the default log/slog handler, this will take over so the entire application uses it without having to pass a
+	// `logger` around.
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: func()slog.Leveler{
+		Level: func() slog.Leveler {
 			if appCfg.Debug {
 				return slog.LevelDebug
 			}
@@ -34,51 +37,38 @@ func main() {
 		}(),
 	})))
 
-	address := fmt.Sprintf("%s:%s", appCfg.GRPC.ServerHost, appCfg.GRPC.UnsecurePort)
+	// create a dial context for our auth service, this will allow us to validate incoming JWT
+	authConn, authConnErr := grpc.DialContext(appCtx,
+		appCfg.GRPC.AuthServerAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
+	if authConnErr != nil {
+		slog.Error("failed to connect to auth server", slog.Any("error", authConnErr))
+		os.Exit(1)
+	}
+	defer func() { _ = authConn.Close() }()
 
-	lis, listenErr := net.Listen("tcp", address)
+	// create a new JWT validator, this will call our AuthService to verify
+	validator := jwt.New(authConn)
+
+	// create the low level TCP listener for our GRPC service
+	lis, listenErr := net.Listen("tcp", appCfg.GRPC.ServerAddr)
 	if listenErr != nil {
-		slog.Error("failed to listen", slog.Any("error", listenErr), slog.String("address", address))
+		slog.Error("failed to listen", slog.Any("error", listenErr), slog.String("address", appCfg.GRPC.ServerAddr))
 		os.Exit(1)
 	}
 
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(appCfg.JWTSecret))),
-		),
-	}
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(validator.ValidateJWT())),
+	)
 
-	grpcServer := grpc.NewServer(opts...)
-
-	interview.RegisterInterviewServiceServer(grpcServer, api.New())
+	interview.RegisterInterviewServiceServer(grpcServer, api.NewServer())
 	reflection.Register(grpcServer)
 
-	slog.Info("Starting interview service", slog.String("address", address))
-	grpcServer.Serve(lis)
-}
-
-const (
-	authHeader = "authorization"
-)
-
-// validateJWT parses and validates a bearer jwt
-//
-// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
-
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			slog.Error("error validating jwt token", slog.Any("error", err))
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
-
-		ctx = context.WithValue(ctx, authHeader, claims)
-
-		return ctx, nil
+	slog.Info("Starting interview service", slog.String("address", appCfg.GRPC.ServerAddr))
+	if e := grpcServer.Serve(lis); e != nil {
+		slog.Error("GRPC server failure", slog.Any("error", e))
+		os.Exit(1)
 	}
 }

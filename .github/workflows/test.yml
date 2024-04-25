@@ -4,7 +4,7 @@ name: Test project
 on: [push]
 
 jobs:
-  build:
+  test:
     runs-on: self-hosted
     steps:
       - name: Check out code into the Go module directory

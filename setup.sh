@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-pushd "gen/proto"
+pushd "gen/proto" || exit 1
 echo "📁 Generating protocol buffers from gen/proto..."
 ./generate.sh
-popd
+popd || exit 1
 
 echo "🏁 Setup complete!"

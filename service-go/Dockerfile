@@ -16,4 +16,4 @@ EXPOSE 8080
 
 COPY --from=builder /app/service /app/service
 
-CMD ["/app/service"]
+ENTRYPOINT ["/app/service"]

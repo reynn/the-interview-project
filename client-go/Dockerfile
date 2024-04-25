@@ -9,6 +9,9 @@ RUN go build -ldflags="-s" -trimpath -o client cmd/client/client.go
 
 FROM debian
 
+LABEL component="client" \
+      repository="github.com/alex-wzm/the-interview-project"
+
 COPY --from=builder /app/client /app/client
 
-CMD ["/app/client"]
+ENTRYPOINT ["/app/client"]

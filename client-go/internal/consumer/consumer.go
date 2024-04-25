@@ -2,11 +2,8 @@ package consumer
 
 import (
 	"context"
-	"fmt"
-	"interview-client/internal/api/interview"
-	"log/slog"
-
 	"google.golang.org/grpc"
+	"interview-client/internal/api/interview"
 )
 
 type consumer struct {
@@ -20,10 +17,10 @@ func New(c *grpc.ClientConn) *consumer {
 	}
 }
 
-func (s *consumer) HelloWorld(ctx context.Context) {
-	resp, err := s.client.HelloWorld(context.Background(), &interview.HelloWorldRequest{})
+func (s *consumer) HelloWorld(ctx context.Context) (string, error) {
+	resp, err := s.client.HelloWorld(ctx, &interview.HelloWorldRequest{})
 	if err != nil {
-		slog.Error("failed to hello world", slog.Any("error", err))
+		return "", err
 	}
-	fmt.Println(resp)
+	return resp.Greeting, nil
 }
