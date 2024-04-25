@@ -13,6 +13,8 @@ import (
 	"authservice-go/internal/config"
 )
 
+var Version = "develop"
+
 func main() {
 	cfg, cfgErr := config.LoadFromEnv()
 	if cfgErr != nil {
@@ -28,7 +30,7 @@ func main() {
 			}
 			return slog.LevelInfo
 		}(),
-	})))
+	})).With(slog.String("version", Version)))
 
 	lis, listenErr := net.Listen("tcp", cfg.GRPC.ListenAddr)
 	if listenErr != nil {

@@ -17,6 +17,8 @@ import (
 	"interview-service/internal/api/interview"
 )
 
+var Version = "develop"
+
 func main() {
 	appCtx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
@@ -35,7 +37,7 @@ func main() {
 			}
 			return slog.LevelInfo
 		}(),
-	})))
+	})).With(slog.String("version", Version)))
 
 	// create a dial context for our auth service, this will allow us to validate incoming JWT
 	authConn, authConnErr := grpc.DialContext(appCtx,

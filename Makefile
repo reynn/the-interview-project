@@ -1,15 +1,22 @@
 CLIENT_CONTAINER_NAME := client
 SERVICE_CONTAINER_NAME := service
 AUTHSERVICE_CONTAINER_NAME := authservice
+COMMIT_SHA := $(shell git rev-parse HEAD)
 
 go-build-client:
-	go build -ldflags="-s" -trimpath -o client ./client-go/cmd/client/client.go
+	go build \
+		-ldflags="-s" \
+		-trimpath -o client ./client-go/cmd/client/client.go
 
 go-build-service:
-	go build -ldflags="-s" -trimpath -o service ./service-go/cmd/service/service.go
+	go build \
+		-ldflags="-s" \
+		-trimpath -o service ./service-go/cmd/service/service.go
 
 go-build-authservice:
-	go build -ldflags="-s" -trimpath -o authservice ./authservice-go/cmd/authservice/authservice.go
+	go build \
+		-ldflags="-s" \
+		-trimpath -o authservice ./authservice-go/cmd/authservice/authservice.go
 
 go-build: go-build-client go-build-service go-build-authservice
 
