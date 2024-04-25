@@ -63,7 +63,7 @@ func main() {
 		grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(validator.ValidateJWT())),
 	)
 
-	interview.RegisterInterviewServiceServer(grpcServer, api.NewServer())
+	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
 
 	slog.Info("Starting interview service", slog.String("address", appCfg.GRPC.ServerAddr))

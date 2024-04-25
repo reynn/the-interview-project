@@ -11,7 +11,7 @@ type server struct {
 	interview.UnimplementedInterviewServiceServer
 }
 
-func NewServer() *server {
+func New() *server {
 	return &server{}
 }
 

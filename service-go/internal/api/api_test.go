@@ -23,7 +23,7 @@ func Test_server_HelloWorld(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewServer()
+			s := New()
 			ctx := context.WithValue(context.Background(), "username", tt.request.Name)
 			got, err := s.HelloWorld(ctx, tt.request)
 			if (err != nil) != tt.wantErr {
