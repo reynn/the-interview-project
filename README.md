@@ -8,15 +8,14 @@ Refer to the [contribution guide](/CONTRIBUTING.md) to get started.
 
 Currently, the project consists of a Go microservice and a corresponding client application. They communicate using [gRPC](https://grpc.io/).
 
-```
--------------------            -------------------
-| Client          |            | Server          |
-| --------        |            |                 |
-| | SDK* |        | <--gRPC--> |                 |
-| --------        |            |                 |
--------------------            -------------------
-
-* Unimplemented
+```mermaid
+sequenceDiagram
+    client->>authservice: send user/pass to authenticate
+    activate authservice
+    authservice-->>client: token or error
+    client->>interviewservice: send request with retrieved token
+    activate interviewservice
+    interviewservice-->>client: greeting or error
 ```
 
 ### Potential next steps
