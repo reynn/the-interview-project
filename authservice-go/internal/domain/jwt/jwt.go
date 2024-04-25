@@ -1,4 +1,4 @@
-package jwtValidator
+package jwt
 
 import (
 	"errors"
@@ -8,15 +8,15 @@ import (
 )
 
 type (
-	// JWTClaims represents the custom claims for our JWT
-	JWTClaims struct {
+	// Claims represents the custom claims for our JWT
+	Claims struct {
 		Username string `json:"username"`
 		jwt.StandardClaims
 	}
 
-	JWTlib interface {
+	Tokenizer interface {
 		GenerateToken(username string, expiresIn time.Duration, secret []byte) (string, error)
-		ValidateToken(tokenString string, secret []byte) (*JWTClaims, error)
+		ValidateToken(tokenString string, secret []byte) (*Claims, error)
 	}
 )
 
@@ -28,7 +28,7 @@ func GenerateToken(username string, expiresIn time.Duration, secret []byte) (str
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	// Set the claims for the token
-	claims := JWTClaims{
+	claims := Claims{
 		username,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(expiresIn).Unix(),
@@ -47,9 +47,9 @@ func GenerateToken(username string, expiresIn time.Duration, secret []byte) (str
 }
 
 // ValidateToken validates a JWT token with the provided secret and returns the claims
-func ValidateToken(tokenString string, secret []byte) (*JWTClaims, error) {
+func ValidateToken(tokenString string, secret []byte) (*Claims, error) {
 	// Parse the token
-	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -66,7 +66,7 @@ func ValidateToken(tokenString string, secret []byte) (*JWTClaims, error) {
 	}
 
 	// Extract the claims from the token
-	claims, ok := token.Claims.(*JWTClaims)
+	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
 		return nil, ErrInvalidToken
 	}
